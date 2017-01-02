@@ -1,0 +1,324 @@
+I. Install MongoDB Community:
+
+  - Connect to server
+  ssh ble@usla-iv20-d002.dev.vubiquity.com
+
+  - Change to root user
+  sudo su
+
+  - Create folder /opt/vu/
+  mkdir /opt/vu
+  cd /opt/vu
+
+  - Download tarball file
+  curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.4.2.tgz
+
+  - Extract the files from the downloaded archive
+  tar -zxvf mongodb-linux-x86_64-3.4.2.tgz
+
+  - Create user mongodb
+  useradd mongodb
+
+  - Create the data directory
+  mkdir -p /opt/vu/data/mongodb
+
+  - Set permissions for the data directory
+  chmod -R 777 /opt/vu/data/mongodb
+
+  - Create the log directory
+  mkdir -p /opt/vu/log/mongodb
+
+  - Set permissions for the log directory
+  chmod -R 777 /opt/vu/log/mongodb
+
+  - chown mongodb folder
+  chown -R mongodb.mongodb /opt/vu/mongodb-linux-x86_64-3.4.2/*
+  chown -R mongodb.mongodb /opt/vu/data/mongodb
+  chown -R mongodb.mongodb /opt/vu/log/mongodb
+
+  - Add bin MongoDB to PATH
+  export PATH=/opt/vu/mongodb-linux-x86_64-3.4.2/bin:$PATH
+
+  - Add iptables
+  iptables -A INPUT -p tcp --dport 27017 -j ACCEPT
+  service iptables save
+
+  - Setting MongoDB
+  ulimit -i 192276
+  ulimit -f unlimited
+  ulimit -t unlimited
+  ulimit -v unlimited
+  ulimit -n 64000
+  ulimit -m unlimited
+  ulimit -u 64000
+
+  - Start MongoDB
+  su mongodb
+  /opt/vu/mongodb-linux-x86_64-3.4.2/bin/mongod --fork --dbpath /opt/vu/data/mongodb --logpath /opt/vu/log/mongodb/mongodb.log
+
+  - Stop MongoDB
+  su mongodb
+  /opt/vu/mongodb-linux-x86_64-3.4.2/bin/mongod --shutdown --dbpath /opt/vu/data/mongodb
+
+II. Install Postgresql:
+
+  - Connect to server
+  ssh ble@usla-ivdb-d002.dev.vubiquity.com
+
+  - Change to root user
+  sudo su
+
+  - Create folder /opt/vu/
+  mkdir /opt/vu
+
+  - Download tarball file
+  cd /opt/vu
+  wget http://ftp.postgresql.org/pub/source/v9.6.2/postgresql-9.6.2.tar.gz
+
+  - Extract the files from the downloaded archive
+  tar -zxvf postgresql-9.6.2.tar.gz
+
+  - Create PostgreSQL Install folder
+  mkdir /opt/vu/PostgreSQL
+  mkdir /opt/vu/PostgreSQL/9.6.2
+  mkdir /opt/vu/PostgreSQL/9.6.2/data
+  mkdir /opt/vu/log
+  mkdir /opt/vu/log/PostgreSQL
+  mkdir /opt/vu/log/PostgreSQL/9.6.2
+
+  - Create user postgres
+  useradd postgres
+  passwd postgres
+
+  - chown postgresql-9.6.2 folder
+  chown -R postgres.postgres /opt/vu/postgresql-9.6.2/*
+  chown -R postgres.postgres /opt/vu/PostgreSQL/*
+  chown -R postgres.postgres /opt/vu/log/PostgreSQL/*
+
+  - Install GCC
+  yum install -y gcc
+
+  - Install library
+  yum install -y readline-devel.x86_64 zlib-devel.x86_64
+
+  - Configure
+  cd /opt/vu/postgresql-9.6.2
+  ./configure -prefix=/opt/vu/PostgreSQL/9.6.2/
+
+  - Make and Install
+  make install
+
+  - init database
+  su - postgres
+  /opt/vu/PostgreSQL/9.6.2/bin/initdb -D /opt/vu/PostgreSQL/9.6.2/data
+  exit
+
+  - Insert text to /opt/vu/PostgreSQL/9.6.2/data/postgresql.conf
+  listen_addresses = '*'
+
+  - Insert text to /opt/vu/PostgreSQL/9.6.2/data/pg_hba.conf
+  host    all             all             0.0.0.0/0            trust
+
+  - Add iptables
+  iptables -A INPUT -p tcp --dport 5432 -j ACCEPT
+  service iptables save
+
+  - Start PostgreSQL
+  su - postgres
+  /opt/vu/PostgreSQL/9.6.2/bin/pg_ctl start -D /opt/vu/PostgreSQL/9.6.2/data >/opt/vu/log/PostgreSQL/9.6.2/postgres.log 2>&1 &
+
+  - Stop PostgreSQL 
+  su - postgres
+  /opt/vu/PostgreSQL/9.6.2/bin/pg_ctl stop -D /opt/vu/PostgreSQL/9.6.2/data
+
+III. Install ElasticSearch:
+
+  - Connect to server
+  ssh ble@usla-ives-d002.dev.vubiquity.com
+
+  - Change to root user
+  sudo su
+
+  - Create folder /opt/vu/
+  mkdir /opt/vu
+
+  - Install JDK 1.8:
+    + Create folder /opt/vu/java
+    mkdir /opt/vu/java
+
+    + Download tarball file
+    cd /opt/vu/java
+    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.tar.gz"
+
+    + Extract the files from the downloaded archive
+    tar xzf jdk-8u121-linux-x64.tar.gz
+
+    + Install Java with Alternatives
+    cd /opt/vu/java/jdk1.8.0_121/
+    alternatives --install /usr/bin/java java /opt/vu/java/jdk1.8.0_121/bin/java 2
+    alternatives --install /usr/bin/jar jar /opt/vu//java/jdk1.8.0_121/bin/jar 2
+    alternatives --install /usr/bin/javac javac /opt/vu//java/jdk1.8.0_121/bin/javac 2
+    alternatives --set jar /opt/vu//java/jdk1.8.0_121/bin/jar
+    alternatives --set javac /opt/vu//java/jdk1.8.0_121/bin/javac
+
+  - Download tarball ElasticSearch:
+  cd /opt/vu
+  curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.2.2.tar.gz
+
+  - Extract the files from the downloaded archive
+  tar -zxvf elasticsearch-5.2.2.tar.gz
+
+  - Setting ElasticSearch
+  sysctl -w vm.max_map_count=262144
+  ulimit -u 2048
+  ulimit -n 65536
+
+  - Insert text to /etc/security/limits.conf
+  elasticsearch    soft    nproc           2048
+  elasticsearch    hard    nproc           2048
+  elasticsearch    soft    nofile          65536
+  elasticsearch    hard    nofile          65536
+  elasticsearch    soft    memlock         unlimited
+  elasticsearch    hard    memlock         unlimited
+
+  - Insert text to /opt/vu/elasticsearch-5.2.2/config/elasticsearch.yml
+  network.bind_host: "0.0.0.0"
+  network.publish_host: _eth0:ipv4_
+
+  - If CentOS, Insert text to /opt/vu/elasticsearch-5.2.2/config/elasticsearch.yml
+  bootstrap.system_call_filter: false
+
+  - Create user elasticsearch
+  useradd elashticsearch
+
+  - chown elasticsearch folder
+  chown -R elasticsearch.elasticsearch /opt/vu/elasticsearch-5.2.2/*
+
+  - Add bin ElasticSearch to PATH
+  export PATH=/opt/vu/elasticsearch-5.2.2/bin:$PATH
+
+  - Add iptables
+  iptables -A INPUT -p tcp --dport 9200 -j ACCEPT
+  iptables -A INPUT -p tcp --dport 9300 -j ACCEPT
+  service iptables save
+
+  - Start ElasticSearch
+  su elasticsearch
+  /opt/vu/elasticsearch-5.2.2/bin/elasticsearch -d
+
+  - Install Kibana:
+    + Download tarball file
+    cd /opt/vu
+    wget https://artifacts.elastic.co/downloads/kibana/kibana-5.2.2-linux-x86_64.tar.gz
+
+    + Extract the files from the downloaded archive
+    tar -xzf kibana-5.2.2-linux-x86_64.tar.gz
+
+    + Insert text to /opt/vu/kibana-5.2.2-linux-x86_64/config/kibana.yml
+    server.host: 0.0.0.0
+
+    + Add bin Kibana to PATH
+    export PATH=/opt/vu/kibana-5.2.2-linux-x86_64/bin:$PATH
+
+    + Add iptables
+    iptables -A INPUT -p tcp --dport 5601 -j ACCEPT
+    service iptables save
+
+    + Start kibana
+    /opt/vu/kibana-5.2.2-linux-x86_64/bin/kibana
+
+IV. Install Tomcat server:
+
+  - Connect to server
+  ssh ble@usla-ivwb-d001.dev.vubiquity.com
+
+  - Change to root user
+  sudo su
+
+  - Install Git
+  yum install -y git
+
+  - Create folder /opt/vu/
+  mkdir /opt/vu
+
+  - Install Sonar
+    + cd /opt/vu
+    wget https://sonarsource.bintray.com/Distribution/sonarqube/sonarqube-6.1.zip
+
+    + Extract the files from the downloaded archive
+    unzip sonarqube-6.1.zip
+
+    + Config sonar
+    vim /opt/vu/sonarqube-6.1/conf/sonar.properties
+      edit properties:
+        sonar.jdbc.username=postgres
+        sonar.jdbc.password=123456
+        sonar.jdbc.url=jdbc:postgresql://usla-ivdb-d001.dev.vubiquity.com:5432/sonar_new
+
+    + Add iptables
+    iptables -A INPUT -p tcp --dport 9000 -j ACCEPT
+    service iptables save
+
+    + Start sonar
+    bash /opt/vu/sonarqube-6.1/bin/linux-x86-64/sonar.sh start
+
+    + Stop sonar
+    bash /opt/vu/sonarqube-6.1/bin/linux-x86-64/sonar.sh stop
+
+  - Install JDK 1.8:
+    + Create folder /opt/vu/java
+    mkdir /opt/vu/java
+
+    + Download tarball file
+    cd /opt/vu/java
+    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.tar.gz"
+
+    + Extract the files from the downloaded archive
+    tar xzf jdk-8u121-linux-x64.tar.gz
+
+    + Install Java with Alternatives
+    cd /opt/vu/java/jdk1.8.0_121/
+    alternatives --install /usr/bin/java java /opt/vu/java/jdk1.8.0_121/bin/java 2
+    alternatives --install /usr/bin/jar jar /opt/vu//java/jdk1.8.0_121/bin/jar 2
+    alternatives --install /usr/bin/javac javac /opt/vu//java/jdk1.8.0_121/bin/javac 2
+    alternatives --set jar /opt/vu//java/jdk1.8.0_121/bin/jar
+    alternatives --set javac /opt/vu//java/jdk1.8.0_121/bin/javac
+
+  - Install Maven:
+    + Download tarball Maven
+    cd /opt/vu
+    wget http://download.nextag.com/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+
+    + Extract the files from the downloaded archive
+    tar xzf apache-maven-3.3.9-bin.tar.gz
+
+    + Add bin Maven to PATH
+    export PATH=/opt/vu/apache-maven-3.3.9/bin:$PATH
+
+  - Download tarball Tomcat:
+  wget https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.8/bin/apache-tomcat-8.5.8.tar.gz
+
+  - Extract the files from the downloaded archive
+  tar -zxvf apache-tomcat-8.5.8.tar.gz
+
+  - Create setenv.sh file:
+  cd /opt/vu/apache-tomcat-8.5.8/bin
+  touch setenv.sh
+
+  - Insert text to /opt/vu/apache-tomcat-8.5.8/bin/setenv.sh
+  JAVA_OPTS="$JAVA_OPTS -Dspring.profiles.active=prod"
+
+  - Create user tomcat
+  useradd tomcat
+
+  - chown tomcat folder
+  chown -R tomcat.tomcat /opt/vu/apache-tomcat-8.5.8/*
+  chmod -R +x /opt/vu/apache-tomcat-8.5.8/bin/setenv.sh
+
+  - Run Tomcat server:
+  su tomcat
+  bash /opt/vu/apache-tomcat-8.5.8/bin/startup.sh
+
+  - Stop Tomcat server
+  su tomcat
+  bash /opt/vu/apache-tomcat-8.5.8/bin/shutdown.sh

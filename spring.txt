@@ -1,0 +1,1 @@
+screen mvn spring-boot:run -Dspring.profiles.active=prod -Djava.security.egd=file:/dev/./urandom

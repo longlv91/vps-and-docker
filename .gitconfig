@@ -1,0 +1,26 @@
+[core]
+	excludesfile = ~/.gitignore_global
+	editor = vim
+[alias]
+	co = checkout
+	cob = checkout -b
+	cm = commit -m
+	cma = commit --amend
+	br = branch
+	logo = log --oneline
+	st = status
+	ps = push
+	pu = pull
+	psot = push origin task
+	putd = pull team develop:develop
+	puom = pull origin master
+	psom = push origin master
+	psod = push origin develop
+	pstd = push team develop
+	cot = checkout task
+	cod = checkout develop
+	rbd = rebase develop
+	rb = rebase
+[user]
+	name = Ha Thanh Tam
+	email = thanhtam.ha1994@hotmail.com

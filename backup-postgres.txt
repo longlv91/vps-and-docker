@@ -1,0 +1,2 @@
+/opt/vu/PostgreSQL/9.6.2/bin/pg_dump -Fc intellivu_qa_week4 > backup_07_26
+pg_restore -d newdb db.dump
